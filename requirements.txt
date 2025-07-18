@@ -1,0 +1,8 @@
+neurokit2
+wfdb
+h5py
+torch
+glob
+numpy
+matplotlib
+tqdm

@@ -109,3 +109,13 @@ def data_preprocess_from_h5(file_path, patient_id='test'):
                                               signal_length=signal.shape[0],
                                               r_peaks=r_peaks,
                                               patient_id=patient_id)
+                                            
+
+# 아래 변수에 .SIG file path랑 해당파일 환자번호 입력
+                                            
+holter_signal_path = 'your_holter_signal_file_path'
+patient_id = 'patient_id_of_your_data'
+
+data_preprocess_from_raw_signal(holter_signal_path, patient_id)
+
+# 실행결과 : 자동으로 같은 디렉토리에 싱글비트단위 데이터(num beats, 101, 3) h5 생성

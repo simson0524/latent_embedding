@@ -116,4 +116,4 @@ def plot_3d_latent_with_color_strips(embeddings, save_dir, title='latent', point
     plt.close()
 
     outlier_indices = np.where(color_matrix.max(axis=0) == 1)[0]  # 빨간색이 하나라도 있는 column
-    return outlier_indices
+    return embeddings, outlier_indices

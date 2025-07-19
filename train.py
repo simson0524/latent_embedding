@@ -112,7 +112,7 @@ def train(model, dataloader, optimizer, device, epochs=50):
 
 
 if __name__ == "__main__":
-    file_directory = input('file_directory')
+    file_directory = input('file_directory') # ToDo : data_preprocess.py save_dir 입력하기
     dataloader = load_dataloader(file_directory=file_directory,
                                  batch_size=16,
                                  shuffle=True)
@@ -127,6 +127,6 @@ if __name__ == "__main__":
                                  weight_decay=0.01)
     
     trained_model = train(model, dataloader, optimizer, device, epochs=20)
-
+    
+    # ToDo : 모델 가중치 저장할 경로 설정하기
     torch.save(trained_model.state_dict(), '/content/drive/MyDrive/BOAZ/ADV_project/model_weight/vae_weights_250716_3.pth')
-    # path 정리해서 수정하기

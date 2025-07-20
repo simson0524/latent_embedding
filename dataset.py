@@ -1,7 +1,6 @@
 # dataset.py
 
 from torch.utils.data import Dataset, DataLoader
-from tqdm.auto import tqdm
 from glob import glob
 import numpy as np
 import torch
@@ -19,12 +18,13 @@ class SingleBeatDataset(Dataset):
         return self.data[idx]
     
 
-def load_dataloader(file_directory, batch_size=16, shuffle=False):
-    h5_path = sorted(glob(os.path.join(file_directory, "*.h5")))[0]  # 첫 번째 파일만 사용
+def load_dataloader(h5_path, batch_size=16, shuffle=False):
     with h5py.File(h5_path, 'r') as f:
         segments = f['segments'][:]  # shape: (N, 101, 3)
-        data = segments.transpose(0, 2, 1).astype(np.float32)  # → (N, 3, 101)
-
-    dataset = SingleBeatDataset(data)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+        segments = segments.transpose(0, 2, 1).astype(np.float32)  # → (N, 3, 101)
+    dataset = SingleBeatDataset(segments)
+    dataloader = DataLoader(dataset, 
+                            batch_size=batch_size, 
+                            shuffle=shuffle,
+                            )
     return dataloader

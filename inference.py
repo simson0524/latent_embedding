@@ -1,24 +1,12 @@
 # inference.py
 
 from itertools import combinations
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import ListedColormap
-from random import sample
-from glob import glob
-from dataset import load_dataloader
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import h5py
 import os
-
-def load_beats_from_h5(file_path): # 필요한가..?
-    with h5py.File(file_path, 'r') as h5f:
-        segment = h5f['segment'][:]
-        if segment.shape[0] == 101:
-            segment = np.transpose(segment, (1, 0))
-    return segment.astype(np.float32)
-
 
 def extract_latents(model, dataloader, device):
     model.to(device)
@@ -116,4 +104,16 @@ def plot_3d_latent_with_color_strips(embeddings, save_dir, title='latent', point
     plt.close()
 
     outlier_indices = np.where(color_matrix.max(axis=0) == 1)[0]  # 빨간색이 하나라도 있는 column
-    return embeddings, outlier_indices
+    return outlier_indices
+
+
+def get_outlier_ranges(outlier_indices, r_peak_indices):
+    ranges = []
+    
+    for idx in outlier_indices:
+        center = int(r_peak_indices[idx])
+        start = center-50
+        end = center+51
+        ranges.append( (start, end) )
+    
+    return np.array(ranges)

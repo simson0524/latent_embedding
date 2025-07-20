@@ -55,23 +55,23 @@ def split_and_save_all_beats_to_single_h5(signal, signal_length, r_peaks, patien
     all_segments = np.stack(all_segments, axis=0)  # shape: (num_beats, 101, channels)
 
     # 저장
-    save_dir = f'./{patient_id}_h5_single_beat_segments'
+    save_dir = f'./single_beats'
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, f'{patient_id}_all_segments.h5')
 
     with h5py.File(save_path, 'w') as h5f:
-        h5f.create_dataset('segments', data=all_segments, compression='gzip')  # shape: (N, 101, C)
-        h5f.attrs['num_segments'] = all_segments.shape[0]
+        h5f.create_dataset('segments', data=all_segments)  # shape: (Num of single beats, 101, 3)
+        h5f.attrs['num_segments'] = all_segments.shape[0]  # Num of single beats
         h5f.attrs['segment_length'] = 101
-        h5f.attrs['num_channels'] = all_segments.shape[2]
+        h5f.attrs['num_channels'] = 3
         h5f.attrs['original_r_peak_count'] = len(r_peaks)
 
     print(f'✔️ Saved {all_segments.shape[0]} segments to {save_path}, shape: {all_segments.shape}')
 
+    return save_path
 
 
 # wfdb를 이용한 데이터 전처리 or denoised h5 데이터 전처리
-
 def data_preprocess_from_raw_signal(file_path, patient_id='test'):
     """
     data preprocessing function from raw signal data(.SIG, .hea)
@@ -85,10 +85,12 @@ def data_preprocess_from_raw_signal(file_path, patient_id='test'):
     sampling_rate_of_record = record.fs
     r_peaks = get_r_peaks(lead_II=signal_of_record[:, 2],
                           sampling_rate=sampling_rate_of_record)
-    split_into_single_beat_by_centered_r_peak(signal=signal_of_record,
-                                              signal_length=signal_of_record.shape[0],
-                                              r_peaks=r_peaks,
-                                              patient_id=patient_id)
+    save_path = split_and_save_all_beats_to_single_h5(signal=signal_of_record,
+                                                      signal_length=signal_of_record.shape[0],
+                                                      r_peaks=r_peaks,
+                                                      patient_id=patient_id)
+    
+    return r_peaks, save_path
     
 
 def data_preprocess_from_h5(file_path, patient_id='test'):
@@ -105,11 +107,12 @@ def data_preprocess_from_h5(file_path, patient_id='test'):
         sampling_rate = h5f.attrs['fs']
     r_peaks = get_r_peaks(lead_II=signal[:, 2],
                           sampling_rate=sampling_rate)
-    split_into_single_beat_by_centered_r_peak(signal=signal,
-                                              signal_length=signal.shape[0],
-                                              r_peaks=r_peaks,
-                                              patient_id=patient_id)
+    save_path = split_and_save_all_beats_to_single_h5(signal=signal,
+                                                      signal_length=signal.shape[0],
+                                                      r_peaks=r_peaks,
+                                                      patient_id=patient_id)
                                             
+    return r_peaks, save_path
 
 # 아래 변수에 .SIG file path랑 해당파일 환자번호 입력
                                             
@@ -117,5 +120,4 @@ holter_signal_path = 'your_holter_signal_file_path'
 patient_id = 'patient_id_of_your_data'
 
 data_preprocess_from_raw_signal(holter_signal_path, patient_id)
-
 # 실행결과 : 자동으로 디렉토리(save_dir)에 싱글비트단위 데이터(num beats, 101, 3) h5 생성

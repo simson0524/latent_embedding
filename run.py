@@ -15,9 +15,10 @@ config = {'idle_gpus' : 1,        # 사용 가능한 GPU 개수
           'outlier_threshold': 3  
           }
 
-config['run_id'] = int( input("Type Your [RUN ID] here ->") )
-config['device'] = input("Type your [DEVICE] here ('cuda:N' or 'cpu') ->")
-config['outlier_threshold'] = float( input("Type your [OUTLIER THRESHOLD] here ->") )
+### If you have multi GPU, activate the following codes.
+# config['run_id'] = int( input("Type Your [RUN ID] here ->") )
+# config['device'] = input("Type your [DEVICE] here ('cuda:N' or 'cpu') ->")
+# config['outlier_threshold'] = float( input("Type your [OUTLIER THRESHOLD] here ->") )
 
 print(f'\n\n[CONFIG of current RUN]\n{config}')
 
@@ -67,21 +68,22 @@ for i, row in tqdm(target_df.iterrows(), total=len(target_df), desc=f'Run_ID #{c
                                  lr=1e-6,
                                  weight_decay=0.01)
     trained_model = train(model, shuffled_dataloader, optimizer, device, epochs=20)
+    os.makedirs("./VAE_weights", exist_ok=True)
     torch.save(trained_model.state_dict(), f'./VAE_weights/{patient_id}_vae.pth')
 
-    # 4. Inference
+    # 4. Inference(plot 안씀 버전)
     _, _, _, std_z = extract_latents(trained_model, not_shuffled_dataloader, device)
     print(f'standardized_latent_z_shape of {patient_id} -> {std_z.shape}')
-    outlier_indices = plot_3d_latent_with_color_strips(embeddings=std_z,
-                                                       save_dir='./plot',
-                                                       patient_id=patient_id,
-                                                       outlier_threshold=config['outlier_threshold'])
-    outlier_ranges = get_outlier_ranges(outlier_indices=outlier_indices,
-                                        r_peak_indices=r_peaks)
+    # outlier_indices = plot_3d_latent_with_color_strips(embeddings=std_z,
+    #                                                    save_dir='./plot',
+    #                                                    patient_id=patient_id,
+    #                                                    outlier_threshold=config['outlier_threshold'])
+    # outlier_ranges = get_outlier_ranges(outlier_indices=outlier_indices,
+    #                                     r_peak_indices=r_peaks)
     os.makedirs('./latent_embeddings', exist_ok=True)
     embedding_path = os.path.join('./latent_embeddings', f'{patient_id}_latent_embedding.h5')
     with h5py.File(embedding_path, 'w') as h5f:
         emb_dset = h5f.create_dataset("standardized_latent_z", data=std_z)
         emb_dset.attrs['is_psvt'] = is_psvt
-        h5f.create_dataset('outlier_indices', data=outlier_indices)
-        h5f.create_dataset('outlier_ranges', data=outlier_ranges)
+        # h5f.create_dataset('outlier_indices', data=outlier_indices)
+        # h5f.create_dataset('outlier_ranges', data=outlier_ranges)

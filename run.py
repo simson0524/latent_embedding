@@ -2,6 +2,7 @@ from data_preprocess import *
 from train import *
 from inference import *
 from dataset import load_dataloader
+from data_postprocess import extract_bag
 from model import *
 from tqdm import tqdm
 import pandas as pd
@@ -87,3 +88,26 @@ for i, row in tqdm(target_df.iterrows(), total=len(target_df), desc=f'Run_ID #{c
         emb_dset.attrs['is_psvt'] = is_psvt
         # h5f.create_dataset('outlier_indices', data=outlier_indices)
         # h5f.create_dataset('outlier_ranges', data=outlier_ranges)
+
+base_path = "./latent_embeddings"
+h5_files = [ f for f in os.listdir(base_path) if f.endswith("_latent_embedding.h5") ]
+print(f"Total h5 files count : {len(h5_files)}")
+
+total_bags = 0
+
+for file in tqdm(h5_files, total=len(h5_files), desc="Extracting bag..."):
+    patient_id = file.split('_')[0]
+    file_path = os.path.join(base_path, file)
+    with h5py.File(file_path, 'r') as h5_files:
+        embeddings = h5_files['standardized_latent_z']
+        is_psvt = embeddings.attrs["is_psvt"]
+        embeddings = embeddings[:]
+
+        extracted_segments, total = extract_bag(patient_id=patient_id,
+                                                std_z=embeddings,
+                                                is_psvt=is_psvt,
+                                                save_dir=base_path+'_time_mil')
+        
+        total_bags += total
+
+print(f"Generated Bags : {total_bags}")

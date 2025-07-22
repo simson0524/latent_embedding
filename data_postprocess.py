@@ -81,26 +81,26 @@ def extract_bag(patient_id, std_z, is_psvt, save_dir, avg_score_threshold=0.135,
     return extracted_instances_of_single_bag, len(extracted_instances_of_single_bag)
 
 
-if __name__ == "__main__":
-    base_path = input("type your base path -> ")
-    h5_files = [ f for f in os.listdir(base_path) if f.endswith("_latent_embedding.h5") ]
-    print(f"Total h5 files count : {len(h5_files)}")
+# if __name__ == "__main__":
+#     base_path = input("type your base path -> ")
+#     h5_files = [ f for f in os.listdir(base_path) if f.endswith("_latent_embedding.h5") ]
+#     print(f"Total h5 files count : {len(h5_files)}")
 
-    total_bags = 0
+#     total_bags = 0
 
-    for file in tqdm(h5_files, total=len(h5_files), desc="Extracting bag..."):
-        patient_id = file.split('_')[0]
-        file_path = os.path.join(base_path, file)
-        with h5py.File(file_path, 'r') as h5_files:
-            embeddings = h5_files['standardized_latent_z']
-            is_psvt = embeddings.attrs["is_psvt"]
-            embeddings = embeddings[:]
+#     for file in tqdm(h5_files, total=len(h5_files), desc="Extracting bag..."):
+#         patient_id = file.split('_')[0]
+#         file_path = os.path.join(base_path, file)
+#         with h5py.File(file_path, 'r') as h5_files:
+#             embeddings = h5_files['standardized_latent_z']
+#             is_psvt = embeddings.attrs["is_psvt"]
+#             embeddings = embeddings[:]
 
-            extracted_segments, total = extract_bag(patient_id=patient_id,
-                                                    std_z=embeddings,
-                                                    is_psvt=is_psvt,
-                                                    save_dir=base_path+'_time_mil')
+#             extracted_segments, total = extract_bag(patient_id=patient_id,
+#                                                     std_z=embeddings,
+#                                                     is_psvt=is_psvt,
+#                                                     save_dir=base_path+'_time_mil')
             
-            total_bags += total
+#             total_bags += total
     
-    print(f"Generated Bags : {total_bags}")
+#     print(f"Generated Bags : {total_bags}")
